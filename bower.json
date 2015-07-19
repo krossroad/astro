@@ -1,0 +1,25 @@
+{
+    "name": "natal",
+    "version": "0.0.1",
+    "homepage": "https://github.com/krossroad/astro",
+    "authors": [
+        "krossroad <krossroad07@gmail.com>"
+    ],
+    "main": "src/main.js",
+    "keywords": [
+        "Backbone"
+    ],
+    "license": "MIT",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "dependencies": {
+        "jquery": ">= 1.9.0",
+        "backbone": ">= 1.1.0",
+        "d3": ">= 3.5.0"
+    }
+}
