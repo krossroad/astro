@@ -31,9 +31,9 @@
 														return point.join(',')
 													}).join(' ');
 												})
-												.attr('fill', 'purple')
-												.attr("stroke","black")
-											    .attr("stroke-width",2);
+												.attr('fill', '#f0f0f0')
+												.attr("stroke", "black")
+											    .attr("stroke-width", 1.5);
 				});
 			},
 
