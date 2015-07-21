@@ -1,23 +1,72 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<title>Natal Chart</title>
-		<link rel="stylesheet" href="./css/styles.css" media="screen" title="no title" charset="utf-8">
-	</head>
-	<body>
-		<div class="" id="wrapper">
-			<h2>Natal Chart for Mr. X</h2>
-		</div>
-		<footer>
-			<!-- Third-Party -->
-			<script src="./bower_components/underscore/underscore-min.js" charset="utf-8"></script>
-			<script src="./bower_components/jquery/dist/jquery.min.js"></script>
-			<script src="./bower_components/backbone/backbone-min.js" charset="utf-8"></script>
-			<script src="./bower_components/d3/d3.min.js"></script>
-			<!-- Third-Party -->
+    <head>
+        <meta charset="utf-8">
+        <title>Natal Chart</title>
+        <link rel="stylesheet" href="./bower_components/bootstrap/dist/css/bootstrap.min.css" media="screen" title="no title" charset="utf-8">
+        <link rel="stylesheet" href="./bower_components/bootstrap/dist/css/bootstrap-theme.min.css" media="screen" title="no title" charset="utf-8">
+        <link rel="stylesheet" href="./css/styles.css" media="screen" title="no title" charset="utf-8">
+        <link rel="stylesheet" type="text/css" href="./bower_components/select2/dist/css/select2.min.css">
+    </head>
+    <body>
+        <div class="" id="app-wrapper">
+            <div class="row">
+                <div class="col-md-12" id="wrapper"></div>
+            </div>
+            <button type="button" name="button" id="set-planets" class="btn btn-primary btn-lg">Set Planet</button>
+        </div>
+        <footer>
+            <!-- Third-Party -->
+            <script src="./bower_components/underscore/underscore-min.js" charset="utf-8"></script>
+            <script src="./bower_components/jquery/dist/jquery.min.js"></script>
+            <script src="./bower_components/bootstrap/dist/js/bootstrap.min.js" charset="utf-8"></script>
+            <script src="./bower_components/backbone/backbone-min.js" charset="utf-8"></script>
+            <script src="./bower_components/d3/d3.min.js"></script>
+            <script src="./bower_components/select2/dist/js/select2.full.min.js"></script>
+            <!-- Third-Party -->
 
-			<script type="text/javascript" src="./src/main.js"></script>
-		</footer>
-	</body>
+            <script type="text/javascript" src="./src/main.js"></script>
+        </footer>
+
+        <!-- Templates -->
+        <script type="text/template" id="modal-template">
+        <div id="myModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Modal Header</h4>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th class="col-sm-1">House</th>
+                                    <th class="col-sm 2">Set Start</th>
+                                    <th>Planets</th>
+                                </tr>
+                            </tbody>
+                            <% _.each(planetoryHouse, function(planet) { %>
+                                <tr>
+                                    <td><%= planet.id %></td>
+                                    <td>
+                                        <input type="radio" name="set-start">
+                                    </td>
+                                    <td>
+                                        <input type="hidden" class="col-sm-12 planets">
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" type="button">Save</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </script>
+        <!-- Templates -->
+    </body>
 </html>
