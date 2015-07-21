@@ -97,19 +97,33 @@
       },
 
       updateSelectablePlanets: function(data) {
-        var select2s, selectedPlanets = [];
+        var select2s, new_data, selectedPlanets = [];
 
-        select2s = this.modal
-                      .find('.planets');
-
-        $.each(select2s, function() {
+        select2s = this.modal.find('.planets');
+        select2s.each(function() {
           var val = $(this).select2('val');
           if (val) {
-            selectedPlanets.push();
+            selectedPlanets = selectedPlanets.concat(val);
           }
         });
 
-        console.log(selectedPlanets);
+        new_data = planets.map(function(planet) {
+          planet = (_.contains(selectedPlanets, planet.id)) ? _.extend({disabled: true}, planet) :
+                  planet;
+          return planet;
+        });
+
+        select2s.each(function() {
+          var val, data;
+
+          val = $(this).select2('val');
+          data = $(this).select2('data');
+
+          $(this).empty()
+          .select2({
+            data: new_data.concat(data)
+          });
+        });
       },
 
       selectPlanets: function  () {
