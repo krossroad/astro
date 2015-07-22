@@ -1,14 +1,18 @@
-(function ($, undefined) {
+(function($, undefined) {
   'use strict';
 
   var
+    EventHandler = _.extend({}, Backbone.Events),
+
     EVENTS = {
-      PLANET_CHANGED : 'planet-selected',
+      PLANET_CHANGED: 'planet-selected',
       SELECT2_SELECT: 'select2:select',
-      SELECT2_UNSELECT: 'select2:unselect'
+      SELECT2_UNSELECT: 'select2:unselect',
+      SET_CHART_BUILDER_VIEW: 'set-chart-builder-view',
+      SET_FINAL_CHART_VIEW: 'set-final-chart-view',
     },
 
-    scale_factor = 5,
+    SCALE = 5,
 
     planets = [
       {id: 'sun', text: 'Sun'},
@@ -23,77 +27,70 @@
       {id: 'pluto', text: 'Pluto'}
     ],
 
-    Polygon = Backbone.Model.extend({
+
+
+    PolygonM = Backbone.Model.extend({
       defaults: {
         planetoryHouseId: 0
       }
     }),
 
-    WorkSpaceRoutes = Backbone.Router.extend({
-      initialize: function () {
-        this.navigate('build');
-      },
-
-      routes: {
-        'build': 'buildChart',
-        'confirm': 'confirmChart'
-      },
-
-      buildChart: function () {
-      },
-
-      confirmChart: function () {
-
-      }
-    }),
-
     PolygonC = Backbone.Collection.extend({
-      model: Polygon,
+      model: PolygonM,
 
       url: './src/data/polygon.json'
     }),
 
-    polygonsC = new PolygonC(),
+    polygonC = new PolygonC();
 
-    AppView = Backbone.View.extend({
-      el: '#app-wrapper',
+  var
+    AppRoutes = Backbone.Router.extend({
+      initialize: function() {
+      },
 
-      initialize: function () {
-        this.modal = null;
-        this.EventHandler = _.extend({}, Backbone.Events);
-        this.svgContainer = d3.select(this.$el.find('#wrapper')[0])
+      routes: {
+        'builder': 'loadBuildView',
+        'confirm': 'loadConfirmationView'
+      },
+
+      loadBuildView: function() {
+        EventHandler.trigger(EVENTS.SET_CHART_BUILDER_VIEW);
+      },
+
+      loadConfirmationView: function() {
+        EventHandler.trigger(EVENTS.SET_FINAL_CHART_VIEW);
+      }
+    }),
+
+    appRoutes = new AppRoutes();
+
+  var
+    BaseChartView = Backbone.View.extend({
+    }),
+
+    ChartBuilderView = BaseChartView.extend({
+      initialize: function() {
+        var baseTemplate = _.template(
+          $('#builder-template').html()
+        );
+
+        this.$el          = $(baseTemplate());
+        this.modal        = null;
+        this.svgContainer = d3.select(this.$el.find('.svg-container')[0])
                               .append('svg')
-                              .attr('width', 750)
+                              .attr('width', 500)
                               .attr('height', 500);
 
-        polygonsC.fetch();
+        polygonC.fetch();
 
-        /**
-         * Bind Events
-         */
-        this.listenTo(polygonsC, 'sync', this.populatePolygons);
-        this.listenTo(polygonsC, 'sync', this.initializeModal);
         this.listenTo(
-          this.EventHandler,
+          EventHandler,
           EVENTS.PLANET_CHANGED,
           this.updateSelectablePlanets
         );
-      },
-
-      events: {
-        'click #set-planets': 'selectPlanets'
-      },
-
-      initializeModal: function() {
-        var elems;
-        this.modal = $('#modal-template').html();
-        this.modal = _.template(this.modal);
-        this.modal = $(this.modal({
-          planetoryHouse: polygonsC.toJSON()
-        }));
-
-        elems = this.modal.find('.planets');
-        this.bindSelect2(elems, planets);
+        this.listenTo(polygonC, 'sync', this.postPolygonSyncHandler);
+        this.$el.find('#btn-set-planets')
+              .on('click', $.proxy(this.selectPlanets, this));
       },
 
       updateSelectablePlanets: function(data) {
@@ -126,55 +123,81 @@
         });
       },
 
-      selectPlanets: function  () {
+      selectPlanets: function () {
         this.modal.modal('show');
       },
 
-      bindSelect2 : function(elems, data) {
-        var self;
+      postPolygonSyncHandler: function() {
+        this.populatePolygons();
+        this.initializeModal();
+      },
 
-        self = this;
-        elems.each(function() {
-            $(this).select2({
-              width: '100%',
-              data: data
-            })
-            .on(EVENTS.SELECT2_SELECT, function  (e) {
-              self.EventHandler
-                .trigger(EVENTS.PLANET_CHANGED, e.params.data);
-            })
-            .on(EVENTS.SELECT2_UNSELECT, function(e) {
-              self.EventHandler
-                .trigger(EVENTS.PLANET_CHANGED, e.params.data);
-            });
-          });
+      initializeModal: function() {
+        var elems, self;
+
+        self       = this;
+        this.modal = $('#modal-template').html();
+        this.modal = _.template(this.modal);
+        this.modal = $(this.modal({
+          planetoryHouse: polygonC.toJSON()
+        }));
+
+        elems = this.modal.find('.planets');
+        elems.each(function(index, elem) {
+          self.bindSelect2($(elem), planets);
+        });
+
+        this.modal.find('#save-chart')
+            .on('click', $.proxy(this.saveChart, this));
+      },
+
+      saveChart: function() {
+        this.modal.modal('hide');
+        appRoutes.navigate('confirm', {trigger: true});
+      },
+
+      bindSelect2 : function(elem, data) {
+        var self = this;
+
+        elem.select2({
+          width: '100%',
+          data: data
+        })
+        .on(EVENTS.SELECT2_SELECT, function  (e) {
+          EventHandler
+            .trigger(EVENTS.PLANET_CHANGED, e.params.data);
+        })
+        .on(EVENTS.SELECT2_UNSELECT, function(e) {
+          EventHandler
+            .trigger(EVENTS.PLANET_CHANGED, e.params.data);
+        });
       },
 
       populatePolygons: function () {
         var polygons, texts
         polygons = this.svgContainer
               .selectAll('polygon')
-              .data(polygonsC.toJSON())
+              .data(polygonC.toJSON())
               .enter()
               .append('polygon')
               .attr('fill', '#f0f0f0')
               .attr("stroke", "black")
-                .attr("stroke-width", 1.5);
+              .attr("stroke-width", 1.5);
 
         polygons.attr('points', this.mapPolygonPoints);
 
         texts = this.svgContainer
                   .selectAll('text')
-                  .data(polygonsC.toJSON())
+                  .data(polygonC.toJSON())
                   .enter()
                   .append('text');
 
         texts
           .attr('x', function (d) {
-            return (d.text_cordinate[0] * scale_factor);
+            return (d.text_cordinate[0] * SCALE);
           })
           .attr('y', function (d) {
-            return (d.text_cordinate[1] * scale_factor);
+            return (d.text_cordinate[1] * SCALE);
           })
           .text(function (d) {
             return d.id;
@@ -184,18 +207,81 @@
       mapPolygonPoints: function (polygon) {
         return polygon.points.map(function (point) {
           point = point.map(function (val) {
-            return val * scale_factor;
+            return val * SCALE;
           })
           return point.join(', ')
         }).join(' ');
+      },
+
+      render: function() {
+        return this;
       }
+    }),
+
+    FinalChartView = BaseChartView.extend({
+    }),
+
+    AppView = Backbone.View.extend({
+      el: '#app-wrapper',
+
+      initialize: function() {
+        this.activeView = null;
+
+        this.listenTo(
+          EventHandler,
+          EVENTS.SET_CHART_BUILDER_VIEW,
+          this.setCharBuilderView
+        );
+        this.listenTo(
+          EventHandler,
+          EVENTS.SET_FINAL_CHART_VIEW,
+          this.setFinalChartView
+        );
+      },
+
+      setCharBuilderView: function() {
+        var
+          view = new ChartBuilderView();
+
+        this.setView(view)
+            .render();
+      },
+
+      setFinalChartView: function() {
+        var view;
+
+        view = new FinalChartView();
+
+        this.setView(view)
+            .render();
+      },
+
+      setView: function(view) {
+        this.activeView = view;
+
+        return this;
+      },
+
+      render: function() {
+        if (this.activeView) {
+          this.$el.empty();
+
+          this.activeView
+              .render()
+              .$el
+              .appendTo(this.$el);
+        }
+      },
     });
 
-  $(document).ready(function () {
-    var appView, appRoutes;
-
+  $(document).ready(function() {
+    var appView;
+    appView = new AppView();
     Backbone.history.start();
-    appRoutes = new WorkSpaceRoutes();
-    appView   = new AppView();
+
+
+    appRoutes.navigate("builder", {
+      trigger: true
+    });
   });
 })(jQuery);
