@@ -10,10 +10,6 @@
     </head>
     <body>
         <div class="" id="app-wrapper">
-            <div class="row">
-                <div class="col-md-12" id="wrapper"></div>
-            </div>
-            <button type="button" name="button" id="set-planets" class="btn btn-primary btn-lg">Set Planet</button>
         </div>
         <footer>
             <!-- Third-Party -->
@@ -50,20 +46,30 @@
                                 <tr>
                                     <td><%= planet.id %></td>
                                     <td>
-                                        <input type="radio" name="set-start">
+                                        <input type="radio" checked="checked" name="set-start">
                                     </td>
                                     <td>
-                                        <input type="hidden" class="col-sm-12 planets">
+                                        <select type="hidden" class="col-sm-12 planets" multiple="true" >
+                                        </select>
                                     </td>
                                 </tr>
                             <% }); %>
                         </table>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-primary" type="button">Save</button>
+                        <button class="btn btn-primary" id="save-chart" type="button">Save</button>
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     </div>
                 </div>
+            </div>
+        </div>
+        </script>
+
+        <script type="text/template" id="builder-template">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="svg-container"></div>
+                <button class="btn btn-primary btn-sm" id="btn-set-planets">Edit</button>
             </div>
         </div>
         </script>
