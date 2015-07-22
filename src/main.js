@@ -14,23 +14,24 @@
 
     SCALE = 5,
 
-    planets = [
-      {id: 'sun', text: 'Sun'},
-      {id: 'moon', text: 'Moon'},
-      {id: 'mercury', text: 'Mercury'},
-      {id: 'venus', text: 'Venus'},
-      {id: 'mars', text: 'Mars'},
-      {id: 'jupiter', text: 'Jupiter'},
-      {id: 'staurn', text: 'Satrun'},
-      {id: 'uranus', text: 'Uranus'},
-      {id: 'neptuen', text: 'Neptune'},
-      {id: 'pluto', text: 'Pluto'}
+    PLANETS = [
+      {id: 'sun', text: 'Sun', abbr: 'Su'},
+      {id: 'moon', text: 'Moon', abbr: 'Mo'},
+      {id: 'mercury', text: 'Mercury', abbr: 'Mer'},
+      {id: 'venus', text: 'Venus', abbr: 'Ve'},
+      {id: 'mars', text: 'Mars', abbr: 'Ma'},
+      {id: 'jupiter', text: 'Jupiter', abbr: 'Ju'},
+      {id: 'staurn', text: 'Satrun', abbr: 'Sa'},
+      {id: 'uranus', text: 'Uranus', abbr: 'Ur'},
+      {id: 'neptuen', text: 'Neptune', abbr: 'Nep'},
+      {id: 'pluto', text: 'Pluto', abbr: 'Pl'}
     ],
 
 
 
     PolygonM = Backbone.Model.extend({
       defaults: {
+        planets: [],
         planetoryHouseId: 0
       }
     }),
@@ -66,6 +67,14 @@
 
   var
     BaseChartView = Backbone.View.extend({
+      mapPolygonPoints: function (scale, polygon) {
+        return polygon.points.map(function (point) {
+          point = point.map(function (val) {
+            return val * scale;
+          })
+          return point.join(', ')
+        }).join(' ');
+      }
     }),
 
     ChartBuilderView = BaseChartView.extend({
@@ -104,7 +113,7 @@
           }
         });
 
-        new_data = planets.map(function(planet) {
+        new_data = PLANETS.map(function(planet) {
           planet = (_.contains(selectedPlanets, planet.id)) ? _.extend({disabled: true}, planet) :
                   planet;
           return planet;
@@ -144,7 +153,7 @@
 
         elems = this.modal.find('.planets');
         elems.each(function(index, elem) {
-          self.bindSelect2($(elem), planets);
+          self.bindSelect2($(elem), PLANETS);
         });
 
         this.modal.find('#save-chart')
@@ -152,6 +161,44 @@
       },
 
       saveChart: function() {
+        var planetDump = {}, startinPlanet, houseId, tempPolygon;
+
+        $(this.modal.find('form').serializeArray())
+            .each(function(index, val) {
+              if (val.name == 'set-start') {
+                startinPlanet = val.value;
+                return;
+              }
+
+              if (planetDump[val.name]) {
+                planetDump[val.name].push(val.value);
+              } else {
+                planetDump[val.name] = [val.value];
+              }
+            });
+
+        polygonC.forEach(function(polygon) {
+          var polygonId;
+
+          polygonId = polygon.get('id');
+
+          if (planetDump[polygonId]) {
+            polygon.set('planets', planetDump[polygonId]);
+          }
+        });
+
+        houseId = 1;
+        tempPolygon = polygonC.findWhere({id: startinPlanet});
+        tempPolygon.set('planetoryHouseId', houseId);
+
+        while (houseId < 12) {
+          houseId++;
+          tempPolygon = polygonC.findWhere({
+            id: tempPolygon.get('next')
+          });
+          tempPolygon.set('planetoryHouseId', houseId);
+        }
+
         this.modal.modal('hide');
         appRoutes.navigate('confirm', {trigger: true});
       },
@@ -174,7 +221,7 @@
       },
 
       populatePolygons: function () {
-        var polygons, texts
+        var polygons, texts;
         polygons = this.svgContainer
               .selectAll('polygon')
               .data(polygonC.toJSON())
@@ -184,7 +231,7 @@
               .attr("stroke", "black")
               .attr("stroke-width", 1.5);
 
-        polygons.attr('points', this.mapPolygonPoints);
+        polygons.attr('points', _.partial(this.mapPolygonPoints, SCALE));
 
         texts = this.svgContainer
                   .selectAll('text')
@@ -204,21 +251,84 @@
           });
       },
 
-      mapPolygonPoints: function (polygon) {
-        return polygon.points.map(function (point) {
-          point = point.map(function (val) {
-            return val * SCALE;
-          })
-          return point.join(', ')
-        }).join(' ');
-      },
-
       render: function() {
         return this;
       }
     }),
 
     FinalChartView = BaseChartView.extend({
+      initialize: function() {
+        var baseTemplate = _.template(
+          $('#confirmation-template').html()
+        );
+
+        this.$el = $(baseTemplate());
+        this.svgContainer = d3.select(this.$el.find('.svg-container')[0])
+                              .append('svg')
+                              .attr('width', 500)
+                              .attr('height', 500);
+      },
+
+      render: function() {
+        this.populatePolygons();
+
+        return this;
+      },
+
+      populatePolygons: function() {
+        var polygons, palentid, texts;
+        polygons = this.svgContainer
+              .selectAll('polygon')
+              .data(polygonC.toJSON())
+              .enter()
+              .append('polygon')
+              .attr('fill', '#f0f0f0')
+              .attr("stroke", "black")
+              .attr("stroke-width", 1.5);
+
+        polygons.attr('points', _.partial(this.mapPolygonPoints, SCALE))
+
+        palentid = this.svgContainer
+                    .selectAll('text.pid')
+                    .data(polygonC.toJSON())
+                    .enter()
+                    .append('text');
+
+        palentid
+          .attr('x', function (d) {
+            return (d.planetory_house_coordinate[0] * SCALE);
+          })
+          .attr('y', function (d) {
+            return (d.planetory_house_coordinate[1] * SCALE);
+          })
+          .text(function (d) {
+            return d.planetoryHouseId;
+          });
+
+        texts = this.svgContainer
+                  .selectAll('text.ptxt')
+                  .data(polygonC.toJSON())
+                  .enter()
+                  .append('text');
+
+        texts
+          .attr('x', function (d) {
+            return (d.text_cordinate[0] * SCALE);
+          })
+          .attr('y', function (d) {
+            return (d.text_cordinate[1] * SCALE);
+          })
+          .text(function (d) {
+            var _planets;
+
+            _planets = _.filter(PLANETS, function(planet) {
+              return _.contains(this.planets, planet.id);
+            }, d);
+            _planets = _.pluck(_planets, 'abbr');
+
+            return _planets.join(', ');
+          });
+      }
     }),
 
     AppView = Backbone.View.extend({
@@ -278,7 +388,6 @@
     var appView;
     appView = new AppView();
     Backbone.history.start();
-
 
     appRoutes.navigate("builder", {
       trigger: true
