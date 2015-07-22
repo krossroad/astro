@@ -34,27 +34,29 @@
                         <h4 class="modal-title">Modal Header</h4>
                     </div>
                     <div class="modal-body">
-                        <table class="table">
-                            <tbody>
-                                <tr>
-                                    <th class="col-sm-1">House</th>
-                                    <th class="col-sm 2">Set Start</th>
-                                    <th>Planets</th>
-                                </tr>
-                            </tbody>
-                            <% _.each(planetoryHouse, function(planet) { %>
-                                <tr>
-                                    <td><%= planet.id %></td>
-                                    <td>
-                                        <input type="radio" checked="checked" name="set-start">
-                                    </td>
-                                    <td>
-                                        <select type="hidden" class="col-sm-12 planets" multiple="true" >
-                                        </select>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        </table>
+                        <form action="">
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <th class="col-sm-1">House</th>
+                                        <th class="col-sm 2">Set Start</th>
+                                        <th>Planets</th>
+                                    </tr>
+                                </tbody>
+                                <% _.each(planetoryHouse, function(planet) { %>
+                                    <tr>
+                                        <td><%= planet.id %></td>
+                                        <td>
+                                            <input type="radio" value="<%= planet.id %>" checked="checked" name="set-start">
+                                        </td>
+                                        <td>
+                                            <select type="hidden" class="col-sm-12 planets" multiple="true" name="<%= planet.id %>" >
+                                            </select>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </table>
+                        </form>
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-primary" id="save-chart" type="button">Save</button>
@@ -70,6 +72,15 @@
             <div class="col-md-12">
                 <div class="svg-container"></div>
                 <button class="btn btn-primary btn-sm" id="btn-set-planets">Edit</button>
+            </div>
+        </div>
+        </script>
+
+        <script type="text/template" id="confirmation-template">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="svg-container"></div>
+                <button class="btn btn-primary">Confirm</button>
             </div>
         </div>
         </script>
