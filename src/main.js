@@ -265,8 +265,13 @@
         this.$el = $(baseTemplate());
         this.svgContainer = d3.select(this.$el.find('.svg-container')[0])
                               .append('svg')
+                              .attr("version", 1.1)
+                              .attr("xmlns", "http://www.w3.org/2000/svg")
                               .attr('width', 500)
                               .attr('height', 500);
+
+        this.$el.find('button#export-to-png')
+            .on('click', $.proxy(this.exportSVGToPng, this));
       },
 
       render: function() {
@@ -275,49 +280,76 @@
         return this;
       },
 
+      exportSVGToPng: function() {
+        var html, canvas, context, DOMURL, image, pngimg, canvasdata, svg,
+            url;
+
+        html = new XMLSerializer().serializeToString(this.svgContainer.node());
+
+        canvas = document.createElement('canvas');
+        canvas.width  = 500;
+        canvas.height = 500;
+        context = canvas.getContext("2d");
+        DOMURL = URL || webkitURL;
+        svg = new Blob([html], {type: "image/svg+xml;charset=utf-8"});
+        url = DOMURL.createObjectURL(svg);
+
+        image = new Image;
+        image.src = url;
+        image.onload = function() {
+          var a;
+
+          context.drawImage(image, 0, 0);
+          canvasdata = canvas.toDataURL("image/png");
+          pngimg = '<img src="'+canvasdata+'">';
+
+          a = document.createElement("a");
+          a.href = canvasdata;
+          a.download = "sample.png";
+          a.click();
+        };
+      },
+
       populatePolygons: function() {
-        var polygons, palentid, texts;
-        polygons = this.svgContainer
-              .selectAll('polygon')
+        var groups, style;
+
+        style = document.createElement('style');
+        style.innerHTML = "/* <![CDATA[ */text {font-size: 12px;color: black;}/* ]]> */";
+
+        this.svgContainer.node()
+            .insertBefore(style, this.svgContainer.node().firstChild);
+
+        groups = this.svgContainer
+              .selectAll('g')
               .data(polygonC.toJSON())
               .enter()
-              .append('polygon')
+              .append('g');
+
+        groups.append('polygon')
               .attr('fill', '#f0f0f0')
               .attr("stroke", "black")
-              .attr("stroke-width", 1.5);
+              .attr("stroke-width", 1.5)
+              .attr('points', _.partial(this.mapPolygonPoints, SCALE));
+        groups.append('text')
+              .attr('x', function (d) {
+                return (d.planetory_house_coordinate[0] * SCALE);
+              })
+              .attr('y', function (d) {
+                return (d.planetory_house_coordinate[1] * SCALE);
+              })
+              .attr("dy", ".35em")
+              .text(function (d) {
+                return d.planetoryHouseId;
+              });
 
-        polygons.attr('points', _.partial(this.mapPolygonPoints, SCALE))
-
-        palentid = this.svgContainer
-                    .selectAll('text.pid')
-                    .data(polygonC.toJSON())
-                    .enter()
-                    .append('text');
-
-        palentid
-          .attr('x', function (d) {
-            return (d.planetory_house_coordinate[0] * SCALE);
-          })
-          .attr('y', function (d) {
-            return (d.planetory_house_coordinate[1] * SCALE);
-          })
-          .text(function (d) {
-            return d.planetoryHouseId;
-          });
-
-        texts = this.svgContainer
-                  .selectAll('text.ptxt')
-                  .data(polygonC.toJSON())
-                  .enter()
-                  .append('text');
-
-        texts
-          .attr('x', function (d) {
+        groups.append('text')
+           .attr('x', function (d) {
             return (d.text_cordinate[0] * SCALE);
           })
           .attr('y', function (d) {
             return (d.text_cordinate[1] * SCALE);
           })
+          .attr("dy", ".35em")
           .text(function (d) {
             var _planets;
 
@@ -325,7 +357,6 @@
               return _.contains(this.planets, planet.id);
             }, d);
             _planets = _.pluck(_planets, 'abbr');
-
             return _planets.join(', ');
           });
       }
