@@ -90,7 +90,9 @@
                               .attr('width', 500)
                               .attr('height', 500);
 
-        polygonC.fetch();
+        polygonC.fetch({
+          reset: true
+        });
 
         this.listenTo(
           EventHandler,
@@ -314,7 +316,7 @@
         var groups, style;
 
         style = document.createElement('style');
-        style.innerHTML = "/* <![CDATA[ */text {font-size: 12px;color: black;}/* ]]> */";
+        style.innerHTML = "/* <![CDATA[ */text {font-size: 14px;color: black;}/* ]]> */";
 
         this.svgContainer.node()
             .insertBefore(style, this.svgContainer.node().firstChild);
