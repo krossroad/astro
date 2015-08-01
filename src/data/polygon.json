@@ -2,7 +2,7 @@
 	{
 		"id": "A",
 		"points": [[0, 0], [50, 0], [25, 25]],
-		"text_cordinate": [25, 12.5],
+		"text_cordinate": [25, 8],
 		"planetory_house_coordinate": [25, 19],
 		"next": "L"
 	},
@@ -16,14 +16,14 @@
 	{
 		"id": "C",
 		"points": [[50, 0], [100, 0], [75, 25]],
-		"text_cordinate": [75, 12.5],
+		"text_cordinate": [75, 8],
 		"planetory_house_coordinate": [75, 19],
 		"next": "B"
 	},
 	{
 		"id": "D",
 		"points": [[100, 0], [100, 50], [75, 25]],
-		"text_cordinate": [87.5, 25],
+		"text_cordinate": [92, 25],
 		"planetory_house_coordinate": [81, 25],
 		"next": "C"
 	},
@@ -37,14 +37,14 @@
 	{
 		"id": "F",
 		"points": [[100, 50], [100, 100], [75, 75]],
-		"text_cordinate": [87.5, 75],
+		"text_cordinate": [92, 75],
 		"planetory_house_coordinate": [81, 75],
 		"next": "E"
 	},
 	{
 		"id": "G",
 		"points": [[75, 75], [100, 100], [50, 100]],
-		"text_cordinate": [75, 87.5],
+		"text_cordinate": [75, 92],
 		"planetory_house_coordinate": [75, 81],
 		"next": "F"
 	},
@@ -58,14 +58,14 @@
 	{
 		"id": "I",
 		"points": [[25, 75], [50, 100], [0, 100]],
-		"text_cordinate": [25, 87.5],
+		"text_cordinate": [25, 92],
 		"planetory_house_coordinate": [25, 81],
 		"next": "H"
 	},
 	{
 		"id":"J",
 		"points": [[0, 50], [25, 75], [0, 100]],
-		"text_cordinate": [12.5, 75],
+		"text_cordinate": [8, 75],
 		"planetory_house_coordinate": [19, 75],
 		"next": "I"
 	},
@@ -79,7 +79,7 @@
 	{
 		"id": "L",
 		"points": [[0, 0], [25, 25], [0, 50]],
-		"text_cordinate": [12.5, 25],
+		"text_cordinate": [8, 25],
 		"planetory_house_coordinate": [19, 25],
 		"next": "K"
 	}
