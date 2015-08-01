@@ -27,8 +27,6 @@
       {id: 'pluto', text: 'Pluto', abbr: 'Pl'}
     ],
 
-
-
     PolygonM = Backbone.Model.extend({
       defaults: {
         planets: [],
@@ -316,7 +314,7 @@
         var groups, style;
 
         style = document.createElement('style');
-        style.innerHTML = "/* <![CDATA[ */text {font-size: 14px;color: black;}/* ]]> */";
+        style.innerHTML = "/* <![CDATA[ */text {font-size: 14px;color: black; overflow: auto;}/* ]]> */";
 
         this.svgContainer.node()
             .insertBefore(style, this.svgContainer.node().firstChild);
@@ -344,23 +342,43 @@
                 return d.planetoryHouseId;
               });
 
-        groups.append('text')
-           .attr('x', function (d) {
-            return (d.text_cordinate[0] * SCALE);
-          })
-          .attr('y', function (d) {
-            return (d.text_cordinate[1] * SCALE);
-          })
-          .attr("dy", ".35em")
-          .text(function (d) {
-            var _planets;
+        var planetGroup = groups.append('g');
 
-            _planets = _.filter(PLANETS, function(planet) {
-              return _.contains(this.planets, planet.id);
-            }, d);
-            _planets = _.pluck(_planets, 'abbr');
-            return _planets.join(', ');
-          });
+        var ptext1 = planetGroup.selectAll('text')
+            .data(function(d) {
+              var _planets, planetGroup = [], temp, accumulator = -5, text_cordinate;
+
+              _planets = _.filter(PLANETS, function(planet) {
+                return _.contains(this.planets, planet.id);
+              }, d);
+              _planets = _.pluck(_planets, 'abbr');
+
+              while (_planets.length > 0) {
+                temp = _planets.splice(2);
+                planetGroup.push({
+                  text_cordinate: [d.text_cordinate[0], (d.text_cordinate[1] + accumulator)],
+                  planets: _planets
+                });
+                _planets = temp;
+                accumulator += 5;
+              }
+
+              return planetGroup;
+            })
+            .enter()
+            .append('text');
+
+          ptext1
+            .attr('x', function (d) {
+              return (d.text_cordinate[0] * SCALE);
+            })
+            .attr('y', function (d) {
+              return (d.text_cordinate[1] * SCALE);
+            })
+            .attr("dy", ".35em")
+            .text(function (d) {
+              return d.planets.join(', ');
+            });
       }
     }),
 
