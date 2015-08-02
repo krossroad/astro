@@ -346,17 +346,19 @@
 
         var ptext1 = planetGroup.selectAll('text')
             .data(function(d) {
-              var _planets, planetGroup = [], temp, accumulator = -5, text_cordinate;
+              var _planets, planetGroup = [], temp, accumulator, text_cordinate;
 
               _planets = _.filter(PLANETS, function(planet) {
                 return _.contains(this.planets, planet.id);
               }, d);
               _planets = _.pluck(_planets, 'abbr');
 
+              accumulator = (_planets.length > 2) ? -5 : 0;
+
               while (_planets.length > 0) {
                 temp = _planets.splice(2);
                 planetGroup.push({
-                  text_cordinate: [d.text_cordinate[0], (d.text_cordinate[1] + accumulator)],
+                  text_cordinate: [d.text_cordinate[0] - 5, (d.text_cordinate[1] + accumulator)],
                   planets: _planets
                 });
                 _planets = temp;
