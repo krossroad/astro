@@ -1,6 +1,7 @@
 (function($, undefined) {
   'use strict';
 
+  // Testing
   var
     EventHandler = _.extend({}, Backbone.Events),
 
